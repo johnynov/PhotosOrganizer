@@ -1,16 +1,30 @@
 import os, subprocess
 from datetime import datetime
 
-print(os.listdir("."))
-
+is_windows = ("yes" if os.name == "nt" else "no")
+sign = str(("\\" if is_windows == "yes" else "/" ))
+move_command = str(("move /Y" if is_windows == "yes" else "mv" ))
 directory = str(input("What is directory where you want to organize your photos?: "))
+if directory.endswith("\\") or directory.endswith("\/") or directory.endswith("\>"):
+    directory = directory[:-1]
+# print(os.listdir(directory))
+only_photos = str(input("Organize only photos? - '.jpg' and '.png' [y/n]: "))
 # place = (input("What is a place you were into?"))
 
 months_dir = {"01": "Styczen", "02": "Luty", "03": "Marzec", "04": "Kwiecien", "05": "Maj", "06": "Czerwiec", "07": "Lipiec", "08": "Sierpien", "09": "Wrzesien", "10": "Pazdziernik", "11": "Listopad", "12":"Grudzien"}
 print(months_dir.values())
 print(months_dir.keys())
+
+def prepeare_file(instring):
+    if is_windows == "yes":
+        return "\"" + instring + "\""
+    else:
+        return instring.replace(" ", "\\ ")
+
 def list_files(directory):
     files_list = list(os.listdir(str(directory)))
+    for i in files_list:
+        i = i.encode("utf-8")
     return files_list
 
 def read_date(file_x):
@@ -44,20 +58,24 @@ def check_if_month_exists(month, year):
             return "not directory"
 
 os.chdir(directory)
+
+print(files_list)
+print (is_windows)
 print(check_if_month_exists(months_dir["06"], 2017))
 for i in files_list:
-    if not os.path.isdir(i):
-        datestamp = str(read_date(i))
-        print(datestamp)
-        year = datestamp.split(" ")[0].split("-")[0]
-        month = datestamp.split(" ")[0].split("-")[1]
-        if check_if_year_exists(year) == True:
-            if check_if_month_exists(months_dir[month], year) == False:
-                os.chdir(year)
-                os.mkdir(months_dir[month])
-                os.chdir("..")
-        else:
-            os.makedirs(year+"/"+months_dir[month])
-        if (directory + "/" + i) != (directory + "/" + year + "/" + months_dir[month]):
-            subprocess.Popen(("mv" + " " + directory + "/" + i.replace(" ", "\\ ") + " " + directory + "/" + year + "/" + months_dir[month]),shell=True)
-            print("Moving file: " + i  + "to " + directory + "/" + year + "/" + months_dir[month])
+    if not ((not (i.endswith(".png") or i.endswith(".jpg"))) and only_photos == "y"):
+        if not os.path.isdir(i):
+            datestamp = str(read_date(i))
+            print(datestamp)
+            year = datestamp.split(" ")[0].split("-")[0]
+            month = datestamp.split(" ")[0].split("-")[1]
+            if check_if_year_exists(year) == True:
+                if check_if_month_exists(months_dir[month], year) == False:
+                    os.chdir(year)
+                    os.mkdir(months_dir[month])
+                    os.chdir("..")
+            else:
+                os.makedirs(year+ sign + months_dir[month])
+            if (directory + sign + i) != (directory + sign + year + sign + months_dir[month]):
+                subprocess.Popen((move_command + " " + directory + sign + prepeare_file(i) + " " + directory + sign + year + sign + months_dir[month]),shell=True)
+                print("Moving file: " + i  + "-> to " + directory + sign + year + sign + months_dir[month]+ sign + i)
