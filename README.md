@@ -1,4 +1,4 @@
-# DateMe
+# PhotosOranizer
 This is a script helpful while importing your files from a sdcard back from trip, helpful with organising your desktop or any other folder.
 
 This a script that allows you to organize your .jpg and .png files in folders by year and by month.
